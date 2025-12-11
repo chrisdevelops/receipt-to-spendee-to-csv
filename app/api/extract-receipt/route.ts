@@ -1,24 +1,26 @@
 import { NextRequest, NextResponse } from 'next/server';
 import OpenAI from 'openai';
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
-
 export async function POST(request: NextRequest) {
   try {
-    const formData = await request.formData();
-    const file = formData.get('image') as File;
-
-    if (!file) {
-      return NextResponse.json({ error: 'No image provided' }, { status: 400 });
-    }
-
+    // Check for API key first
     if (!process.env.OPENAI_API_KEY) {
       return NextResponse.json(
         { error: 'OPENAI_API_KEY not configured' },
         { status: 500 }
       );
+    }
+
+    // Initialize OpenAI client only when the route is called (not during build)
+    const openai = new OpenAI({
+      apiKey: process.env.OPENAI_API_KEY,
+    });
+
+    const formData = await request.formData();
+    const file = formData.get('image') as File;
+
+    if (!file) {
+      return NextResponse.json({ error: 'No image provided' }, { status: 400 });
     }
 
     // Convert file to base64
